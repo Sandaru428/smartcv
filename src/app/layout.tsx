@@ -46,7 +46,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} dark:bg-gray-900 p-2 mx-auto max-w-[90vw] md:p-4`}
+        className={`${geistSans.variable} ${geistMono.variable} dark:bg-gray-900 p-2 mx-auto md:p-4`}
       >
         {/* run before React hydrates to avoid light/dark flash */}
         <script dangerouslySetInnerHTML={{ __html: setInitialTheme }} />
