@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 
 export default function HomePage() {
   return (
-    <main className="min-h-[90vh] bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col items-center justify-center px-6">
+    <main className="min-h-[90vh] text-gray-900 dark:text-gray-100 flex flex-col items-center justify-center px-6">
       {/* Hero Section */}
       <motion.section
         initial={{ opacity: 0, y: 30 }}
