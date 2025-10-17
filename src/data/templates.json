@@ -1,0 +1,23 @@
+[
+  {
+    "id": "modern",
+    "name": "Modern Professional",
+    "description": "Clean layout with bold headings and elegant spacing.",
+    "previewImage": "/templates/modern.png",
+    "latexFile": "/data/latex/modern.tex"
+  },
+  {
+    "id": "classic",
+    "name": "Classic Elegance",
+    "description": "Traditional design suited for academics and engineers.",
+    "previewImage": "/templates/classic.png",
+    "latexFile": "/data/latex/classic.tex"
+  },
+  {
+    "id": "minimalist",
+    "name": "Minimalist",
+    "description": "Simple and modern look focused on readability.",
+    "previewImage": "/templates/minimalist.png",
+    "latexFile": "/data/latex/minimalist.tex"
+  }
+]
