@@ -81,10 +81,10 @@ export default function LatexPreview({ resumeData, templateId }: LatexPreviewPro
         const defaultBase = `
 \\documentclass{article}
 \\begin{document}
-\\section*{${resumeData?.name}}
-Email: ${resumeData?.email} \\\\
+\\section*{\${resumeData.name}}
+Email: \${resumeData.email} \\\\
 \\subsection*{Skills}
-${resumeData?.skills}
+\${resumeData.skills}
 \\end{document}
         `;
         if (!cancelled) {
@@ -107,6 +107,36 @@ ${resumeData?.skills}
     setLatexCode(final);
   }, [baseTemplate, resumeData]);
 
+  // new: render array of nodes with substituted values wrapped in a colored span
+  function renderHighlighted(template: string, data?: ResumeData): React.ReactNode[] {
+    if (!template) return [];
+    const re = /\$\{resumeData\.([a-zA-Z0-9_]+)\}/g;
+    const nodes: React.ReactNode[] = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+    let idx = 0;
+
+    while ((match = re.exec(template)) !== null) {
+      const start = match.index;
+      const key = match[1];
+      if (start > lastIndex) {
+        nodes.push(template.slice(lastIndex, start));
+      }
+      const val = data ? data[key] : "";
+      // variable value styled differently
+      nodes.push(
+        <span key={`var-${idx++}`} className="text-green-950 dark:text-green-50 font-medium">
+          {val}
+        </span>
+      );
+      lastIndex = re.lastIndex;
+    }
+    if (lastIndex < template.length) {
+      nodes.push(template.slice(lastIndex));
+    }
+    return nodes;
+  }
+
   return (
     <div className="p-6 rounded-2xl shadow-sm bg-gray-100 dark:bg-gray-800">
       <h2 className="text-xl font-semibold mb-4">Generated LaTeX Code</h2>
@@ -117,8 +147,8 @@ ${resumeData?.skills}
         <div className="text-sm text-red-500">Error: {error}</div>
       ) : (
         // added `custom-scrollbar` to apply the global scrollbar styles
-        <pre className="bg-white dark:bg-gray-900 text-green-400 text-sm p-4 rounded-lg overflow-auto max-h-[75vh] custom-scrollbar cursor-auto">
-          {latexCode}
+        <pre className="bg-white dark:bg-gray-900 text-green-600 dark:text-green-400 text-sm p-4 rounded-lg overflow-auto max-h-[75vh] custom-scrollbar cursor-auto">
+          {baseTemplate ? renderHighlighted(baseTemplate, resumeData) : latexCode}
         </pre>
       )}
     </div>
