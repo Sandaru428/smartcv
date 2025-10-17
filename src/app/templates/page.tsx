@@ -23,7 +23,7 @@ export default function TemplatesPage() {
       // ignore storage errors
     }
     // optional: pass query param for server/client detection
-    router.push(`/home?template=${encodeURIComponent(t.id)}`);
+    router.push(`/home/editor?template=${encodeURIComponent(t.id)}`);
   }
 
   return (

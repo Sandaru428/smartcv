@@ -116,7 +116,8 @@ ${resumeData?.skills}
       ) : error ? (
         <div className="text-sm text-red-500">Error: {error}</div>
       ) : (
-        <pre className="bg-white dark:bg-gray-900 text-green-400 text-sm p-4 rounded-lg overflow-auto">
+        // added `custom-scrollbar` to apply the global scrollbar styles
+        <pre className="bg-white dark:bg-gray-900 text-green-400 text-sm p-4 rounded-lg overflow-auto max-h-[75vh] custom-scrollbar cursor-auto">
           {latexCode}
         </pre>
       )}
