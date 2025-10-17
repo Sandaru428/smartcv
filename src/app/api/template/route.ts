@@ -29,10 +29,12 @@ export async function GET(req: Request) {
         status: 200,
         headers: { "Content-Type": "text/plain; charset=utf-8" },
       });
-    } catch (e: any) {
-      return new Response(`Failed to read latex file: ${e?.message || String(e)}`, { status: 404 });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      return new Response(`Failed to read latex file: ${msg}`, { status: 404 });
     }
-  } catch (err: any) {
-    return new Response(`Server error: ${err?.message || String(err)}`, { status: 500 });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return new Response(`Server error: ${msg}`, { status: 500 });
   }
 }

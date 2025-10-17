@@ -19,7 +19,7 @@ export default function TemplatesPage() {
     try {
       localStorage.setItem("selectedTemplateId", t.id);
       localStorage.setItem("selectedTemplateLatexFile", t.latexFile);
-    } catch (e) {
+    } catch {
       // ignore storage errors
     }
     // optional: pass query param for server/client detection

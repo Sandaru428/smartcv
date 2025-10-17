@@ -6,6 +6,7 @@ interface ResumeData {
   name: string;
   email: string;
   skills: string;
+  [key: string]: string; // allow indexing by placeholder key
 }
 
 interface LatexPreviewProps {
@@ -31,8 +32,8 @@ export default function LatexPreview({ resumeData, templateId }: LatexPreviewPro
   // helper: replace ${resumeData.key} with values from resumeData
   function interpolateTemplate(template: string, data?: ResumeData) {
     if (!template) return "";
-    return template.replace(/\$\{resumeData\.([a-zA-Z0-9_]+)\}/g, (_m, key) => {
-      const val = data && (data as any)[key];
+    return template.replace(/\$\{resumeData\.([a-zA-Z0-9_]+)\}/g, (_m: string, key: string) => {
+      const val = data ? data[key] : undefined;
       return val != null ? String(val) : "";
     });
   }
@@ -69,8 +70,9 @@ export default function LatexPreview({ resumeData, templateId }: LatexPreviewPro
           if (!cancelled) {
             setBaseTemplate(text); // keep raw template (placeholders intact)
           }
-        } catch (err: any) {
-          if (!cancelled) setError(err?.message || "Failed to load template file");
+        } catch (caught: unknown) {
+          const message = caught instanceof Error ? caught.message : String(caught);
+          if (!cancelled) setError(message || "Failed to load template file");
         } finally {
           if (!cancelled) setLoading(false);
         }
@@ -79,10 +81,10 @@ export default function LatexPreview({ resumeData, templateId }: LatexPreviewPro
         const defaultBase = `
 \\documentclass{article}
 \\begin{document}
-\\section*{\${resumeData.name}}
-Email: \${resumeData.email} \\\\
+\\section*{${resumeData?.name}}
+Email: ${resumeData?.email} \\\\
 \\subsection*{Skills}
-\${resumeData.skills}
+${resumeData?.skills}
 \\end{document}
         `;
         if (!cancelled) {
@@ -114,7 +116,7 @@ Email: \${resumeData.email} \\\\
       ) : error ? (
         <div className="text-sm text-red-500">Error: {error}</div>
       ) : (
-        <pre className="bg-white dark:bg-gray-900 text-green-400 text-sm p-4 rounded-lg overflow-x-auto">
+        <pre className="bg-white dark:bg-gray-900 text-green-400 text-sm p-4 rounded-lg overflow-auto">
           {latexCode}
         </pre>
       )}
