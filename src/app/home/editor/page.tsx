@@ -1,18 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import ResumeForm from "@/components/home/ResumeForm";
+import ResumeForm, { ResumeData } from "@/components/home/ResumeForm";
 import LatexPreview from "@/components/home/LatexPreview";
 
 export default function EditorPage() {
-  const [resumeData, setResumeData] = useState({
-    name: "",
-    email: "",
-    skills: "",
+  const [resumeData, setResumeData] = useState<ResumeData>({
+    general: [],
+    education: [],
+    projects: [],
+    experience: [],
   });
 
   return (
-    <main className="text-gray-900 dark:text-gray-100 p-4">
+    <main className="text-gray-900 dark:text-gray-100 p-4 max-h-[70vh]">
       <h1 className="text-3xl font-bold mb-8 text-center">
         AI Resume Builder (LaTeX Generator)
       </h1>

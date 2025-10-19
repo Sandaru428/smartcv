@@ -2,11 +2,17 @@
 import { useEffect, useState } from "react";
 import templates from "../../data/templates.json";
 
+interface GeneralEntry {
+  [key: string]: any;
+  name?: string;
+  email?: string;
+  skills?: string;
+}
+
 interface ResumeData {
-  name: string;
-  email: string;
-  skills: string;
-  [key: string]: string; // allow indexing by placeholder key
+  // new shape: general entries array
+  general?: GeneralEntry[];
+  [key: string]: any; // allow other fields
 }
 
 interface LatexPreviewProps {
@@ -29,11 +35,14 @@ export default function LatexPreview({ resumeData, templateId }: LatexPreviewPro
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // helper: replace ${resumeData.key} with values from resumeData
+  // helper: replace ${resumeData.key} with values from resumeData or fallback to first general entry
   function interpolateTemplate(template: string, data?: ResumeData) {
     if (!template) return "";
     return template.replace(/\$\{resumeData\.([a-zA-Z0-9_]+)\}/g, (_m: string, key: string) => {
-      const val = data ? data[key] : undefined;
+      let val = data ? data[key] : undefined;
+      if ((val === undefined || val === null) && data?.general && data.general.length > 0) {
+        val = data.general[0][key];
+      }
       return val != null ? String(val) : "";
     });
   }
@@ -107,7 +116,7 @@ Email: \${resumeData.email} \\\\
     setLatexCode(final);
   }, [baseTemplate, resumeData]);
 
-  // new: render array of nodes with substituted values wrapped in a colored span
+  // renderHighlighted: wraps substituted values in a colored span, with fallback to general[0]
   function renderHighlighted(template: string, data?: ResumeData): React.ReactNode[] {
     if (!template) return [];
     const re = /\$\{resumeData\.([a-zA-Z0-9_]+)\}/g;
@@ -122,11 +131,13 @@ Email: \${resumeData.email} \\\\
       if (start > lastIndex) {
         nodes.push(template.slice(lastIndex, start));
       }
-      const val = data ? data[key] : "";
-      // variable value styled differently
+      let val = data ? data[key] : "";
+      if ((val === undefined || val === null) && data?.general && data.general.length > 0) {
+        val = data.general[0][key];
+      }
       nodes.push(
-        <span key={`var-${idx++}`} className="text-green-950 dark:text-green-50 font-medium">
-          {val}
+        <span key={`var-${idx++}`} className="text-green-800 dark:text-green-100 font-medium">
+          {String(val ?? "")}
         </span>
       );
       lastIndex = re.lastIndex;
@@ -147,7 +158,7 @@ Email: \${resumeData.email} \\\\
         <div className="text-sm text-red-500">Error: {error}</div>
       ) : (
         // added `custom-scrollbar` to apply the global scrollbar styles
-        <pre className="bg-white dark:bg-gray-900 text-green-600 dark:text-green-400 text-sm p-4 rounded-lg overflow-auto max-h-[75vh] custom-scrollbar cursor-auto">
+        <pre className="bg-white dark:bg-gray-900 text-green-400 text-sm p-4 rounded-lg overflow-auto max-h-[75vh] custom-scrollbar cursor-auto">
           {baseTemplate ? renderHighlighted(baseTemplate, resumeData) : latexCode}
         </pre>
       )}
