@@ -2,8 +2,12 @@
 
 import { ThemeToggleButton } from "@/components/common/ThemeToggleButton";
 import React from "react";
+import { useRouter } from "next/navigation";
+import AuthButtons from "@/components/common/AuthButtons";
+
 
 const AppHeader = () => {
+  const router = useRouter();
 
   return (
     <div className="sticky top-0 flex items-center justify-between w-full z-99999 px-4">
@@ -13,6 +17,7 @@ const AppHeader = () => {
 
       <div className="flex items-center gap-2 2xsm:gap-3">
         <ThemeToggleButton />
+        <AuthButtons />
       </div>
 
       {/* <!-- User Area --> */}
