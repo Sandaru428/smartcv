@@ -1,13 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import templates from "../../data/templates.json";
-
-interface GeneralEntry {
-  [key: string]: any;
-  name?: string;
-  email?: string;
-  skills?: string;
-}
+import { GeneralEntry } from "./steps/GeneralStep";
 
 interface ResumeData {
   // new shape: general entries array

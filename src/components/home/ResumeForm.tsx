@@ -1,16 +1,10 @@
 "use client";
 
 import React from "react";
-import GeneralStep from "./steps/GeneralStep";
+import GeneralStep, { GeneralEntry } from "./steps/GeneralStep";
 import EducationStep from "./steps/EducationStep";
 import ProjectsStep from "./steps/ProjectsStep";
 import ExperienceStep from "./steps/ExperienceStep";
-
-interface GeneralEntry {
-  name: string;
-  email: string;
-  skills: string;
-}
 
 interface EducationEntry {
   school: string;
@@ -67,13 +61,36 @@ export default function ResumeForm({ resumeData, setResumeData }: ResumeFormProp
             data={
               resumeData.general && resumeData.general.length > 0
                 ? resumeData.general[0]
-                : { name: "", email: "", skills: "" }
+                : {
+                    name: "",
+                    birthday: "",
+                    gender: "",
+                    address: "",
+                    email: "",
+                    phone: "",
+                    portfolio: "",
+                    linkedin: "",
+                    github: "",
+                    about: "",
+                  }
             }
             onChange={(patch) =>
               setResumeData((prev) => {
                 const nextGeneral = [...(prev.general || [])];
                 if (nextGeneral.length === 0) {
-                  nextGeneral[0] = { name: "", email: "", skills: "", ...patch };
+                  nextGeneral[0] = {
+                    name: "",
+                    birthday: "",
+                    gender: "",
+                    address: "",
+                    email: "",
+                    phone: "",
+                    portfolio: "",
+                    linkedin: "",
+                    github: "",
+                    about: "",
+                    ...patch,
+                  };
                 } else {
                   nextGeneral[0] = { ...nextGeneral[0], ...patch };
                 }
