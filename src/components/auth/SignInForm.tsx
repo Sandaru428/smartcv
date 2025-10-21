@@ -6,6 +6,7 @@ import Button from "@/components/ui/Button";
 import Link from "next/link";
 import React, { useState } from "react";
 import { IconBrandGithub, IconChevronLeft, IconEye, IconEyeClosed } from "@tabler/icons-react";
+import { login } from "@/hooks/authActions";
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -75,13 +76,18 @@ export default function SignInForm() {
                 </span>
               </div>
             </div>
-            <form>
+            <form action={login}>
               <div className="space-y-6">
                 <div>
                   <div className="text-sm font-medium text-gray-700 dark:text-white">
                     Email <span className="text-error-500">*</span>{" "}
                   </div>
-                  <Input placeholder="info@gmail.com" type="email" />
+                  <Input
+                    id="email"
+                    name="email"
+                    placeholder="info@gmail.com"
+                    type="email"
+                  />
                 </div>
                 <div>
                   <div className="text-sm font-medium text-gray-700 dark:text-white">
@@ -89,8 +95,11 @@ export default function SignInForm() {
                   </div>
                   <div className="relative">
                     <Input
+                      id="password"
+                      name="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter your password"
+                      required={true}
                     />
                     <span
                       onClick={() => setShowPassword(!showPassword)}

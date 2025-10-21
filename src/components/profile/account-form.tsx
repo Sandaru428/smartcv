@@ -76,7 +76,7 @@ export default function AccountForm({ user }: { user: User | null }) {
     }
 
     return (
-        <div className="form-widget">
+        <div className="form-widget text-gray-900 dark:text-gray-100">
 
             {/* ... */}
 
@@ -123,7 +123,7 @@ export default function AccountForm({ user }: { user: User | null }) {
             </div>
 
             <div>
-                <form action="/auth/signout" method="post">
+                <form action="/api/signout" method="post">
                     <button className="button block" type="submit">
                         Sign out
                     </button>

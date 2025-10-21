@@ -6,6 +6,7 @@ import Button from "@/components/ui/Button";
 import Link from "next/link";
 import React, { useState } from "react";
 import { IconBrandGithub, IconChevronLeft, IconEye, IconEyeClosed } from "@tabler/icons-react";
+import { signup } from "@/hooks/authActions";
 
 export default function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -75,7 +76,7 @@ export default function SignUpForm() {
                 </span>
               </div>
             </div>
-            <form>
+            <form action={signup}>
               <div className="space-y-5">
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                   {/* <!-- First Name --> */}
@@ -122,8 +123,11 @@ export default function SignUpForm() {
                   </div>
                   <div className="relative">
                     <Input
+                      id="password"
+                      name="password"
                       placeholder="Enter your password"
                       type={showPassword ? "text" : "password"}
+                      required={true}
                     />
                     <span
                       onClick={() => setShowPassword(!showPassword)}
