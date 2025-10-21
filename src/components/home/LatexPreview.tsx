@@ -1,16 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
 import templates from "../../data/templates.json";
-import { GeneralEntry } from "./steps/GeneralStep";
 
-interface ResumeData {
-  // new shape: general entries array
-  general?: GeneralEntry[];
-  [key: string]: any; // allow other fields
-}
-
+// Accept any incoming shape so external ResumeData types are assignable
 interface LatexPreviewProps {
-  resumeData?: ResumeData;
+  resumeData?: unknown;
   // optional explicit templateId prop (takes precedence over URL/localStorage)
   templateId?: string;
 }
@@ -29,14 +23,24 @@ export default function LatexPreview({ resumeData, templateId }: LatexPreviewPro
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  // runtime-safe accessor: accepts unknown-shaped data and returns value or fallback to general[0][key]
+  function getValueFromData(data: unknown, key: string): unknown {
+    if (!data || typeof data !== "object") return undefined;
+    const obj = data as Record<string, unknown>;
+    let val = obj[key];
+    const general = obj["general"];
+    if ((val === undefined || val === null) && Array.isArray(general) && general.length > 0) {
+      const first = general[0] as Record<string, unknown>;
+      val = first ? first[key] : undefined;
+    }
+    return val;
+  }
+
   // helper: replace ${resumeData.key} with values from resumeData or fallback to first general entry
-  function interpolateTemplate(template: string, data?: ResumeData) {
+  function interpolateTemplate(template: string, data?: unknown) {
     if (!template) return "";
     return template.replace(/\$\{resumeData\.([a-zA-Z0-9_]+)\}/g, (_m: string, key: string) => {
-      let val = data ? data[key] : undefined;
-      if ((val === undefined || val === null) && data?.general && data.general.length > 0) {
-        val = data.general[0][key];
-      }
+      const val = getValueFromData(data, key);
       return val != null ? String(val) : "";
     });
   }
@@ -111,7 +115,7 @@ Email: \${resumeData.email} \\\\
   }, [baseTemplate, resumeData]);
 
   // renderHighlighted: wraps substituted values in a colored span, with fallback to general[0]
-  function renderHighlighted(template: string, data?: ResumeData): React.ReactNode[] {
+  function renderHighlighted(template: string, data?: unknown): React.ReactNode[] {
     if (!template) return [];
     const re = /\$\{resumeData\.([a-zA-Z0-9_]+)\}/g;
     const nodes: React.ReactNode[] = [];
@@ -125,10 +129,7 @@ Email: \${resumeData.email} \\\\
       if (start > lastIndex) {
         nodes.push(template.slice(lastIndex, start));
       }
-      let val = data ? data[key] : "";
-      if ((val === undefined || val === null) && data?.general && data.general.length > 0) {
-        val = data.general[0][key];
-      }
+      const val = getValueFromData(data, key);
       nodes.push(
         <span key={`var-${idx++}`} className="text-green-800 dark:text-green-100 font-medium">
           {String(val ?? "")}

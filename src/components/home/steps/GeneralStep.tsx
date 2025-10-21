@@ -3,7 +3,7 @@ import Input from "@/components/ui/InputField";
 import TextArea from "@/components/ui/TextArea";
 
 export interface GeneralEntry {
-  [key: string]: any; // allow indexing by string keys (fixes usage like general[0][key])
+  [key: string]: unknown; // allow indexing by string keys (fixes usage like general[0][key])
   name: string;
   role?: string;
   birthday?: string;
