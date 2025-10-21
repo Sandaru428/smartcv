@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { ThemeProvider } from "../context/ThemeContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 import AppHeader from "@/layout/AppHeader";
 
 const geistSans = Geist({
@@ -44,16 +43,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
+    <>
+      {/* run before React hydrates to avoid light/dark flash */}
+      <script dangerouslySetInnerHTML={{ __html: setInitialTheme }} />
+      <div
         className={`${geistSans.variable} ${geistMono.variable} dark:bg-gray-900 p-2 mx-auto md:p-4`}
       >
-        {/* run before React hydrates to avoid light/dark flash */}
-        <script dangerouslySetInnerHTML={{ __html: setInitialTheme }} />
         <ThemeProvider>
+          <AppHeader />
           {children}
         </ThemeProvider>
-      </body>
-    </html>
+      </div>
+    </>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import templates from "../../data/templates.json";
+import templates from "../../../data/templates.json";
 
 interface Template {
   id: string;
@@ -23,7 +23,7 @@ export default function TemplatesPage() {
       // ignore storage errors
     }
     // optional: pass query param for server/client detection
-    router.push(`/home/editor?template=${encodeURIComponent(t.id)}`);
+    router.push(`/editor?template=${encodeURIComponent(t.id)}`);
   }
 
   return (
