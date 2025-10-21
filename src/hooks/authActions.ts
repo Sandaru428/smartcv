@@ -2,10 +2,9 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-
 import { createClient } from '@/utils/supabase/server'
 
-export async function login(formData: FormData) {
+export async function signin(formData: FormData) {
   const supabase = await createClient()
 
   // type-casting here for convenience
@@ -43,4 +42,20 @@ export async function signup(formData: FormData) {
 
   revalidatePath('/', 'layout')
   redirect('/home')
+}
+
+export async function signout() {
+  const supabase = await createClient()
+
+  // Check if a user's logged in
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (user) {
+    await supabase.auth.signOut()
+  }
+
+  revalidatePath('/', 'layout')
+  redirect('/signin')
 }

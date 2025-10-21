@@ -6,7 +6,7 @@ import Button from "@/components/ui/Button";
 import Link from "next/link";
 import React, { useState } from "react";
 import { IconBrandGithub, IconChevronLeft, IconEye, IconEyeClosed } from "@tabler/icons-react";
-import { login } from "@/hooks/authActions";
+import { signin } from "@/hooks/authActions";
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -76,7 +76,7 @@ export default function SignInForm() {
                 </span>
               </div>
             </div>
-            <form action={login}>
+            <form action={signin}>
               <div className="space-y-6">
                 <div>
                   <div className="text-sm font-medium text-gray-700 dark:text-white">

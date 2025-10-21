@@ -15,7 +15,8 @@ export async function POST(req: NextRequest) {
   }
 
   revalidatePath("/", "layout");
-  return NextResponse.redirect(new URL("/signin", req.url), {
-    status: 302,
-  });
+
+  // Keep the route for client-side fetch compatibility.
+  // Return JSON with an optional redirect hint instead of issuing a server redirect.
+  return NextResponse.json({ success: true, redirect: "/signin" }, { status: 200 });
 }
