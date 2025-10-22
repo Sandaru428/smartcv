@@ -2,10 +2,10 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/utils/supabase/server'
+import { createClientPub } from '@/utils/supabase/server'
 
 export async function signin(formData: FormData) {
-  const supabase = await createClient()
+  const supabase = await createClientPub()
 
   // type-casting here for convenience
   // in practice, you should validate your inputs
@@ -55,7 +55,7 @@ export async function signup(formData: FormData) {
 
 
 export async function signout() {
-  const supabase = await createClient()
+  const supabase = await createClientPub()
 
   // Check if a user's logged in
   const {

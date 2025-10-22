@@ -1,8 +1,8 @@
 import AccountForm from '@/components/profile/account-form'
-import { createClient } from '@/utils/supabase/server'
+import { createClientPub } from '@/utils/supabase/server'
 
 export default async function Home() {
-    const supabase = await createClient()
+    const supabase = await createClientPub()
 
     const {
         data: { user },

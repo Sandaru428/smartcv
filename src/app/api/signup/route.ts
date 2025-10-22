@@ -1,12 +1,6 @@
-// app/api/auth/signup/route.ts
 import { NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { createClientPub, createClientAdmin } from "@/utils/supabase/server";
 
-/**
- * POST { email, password, fname?, lname? }
- * Returns { user, otp } on success or { error } on failure.
- */
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -16,15 +10,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "email and password required" }, { status: 400 });
     }
 
-    // get Next.js cookies and cast to any to satisfy createServerClient types
-    const nextCookies = (await cookies()) as unknown as any;
-
-    // 1) Create the user using service role (server-only)
-    const supabaseAdmin = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      { cookies: nextCookies }
-    );
+    // Create the user using service role (server-only) via helper
+    const supabaseAdmin = await createClientAdmin();
 
     const { data: createdUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
@@ -36,7 +23,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: createError.message }, { status: 500 });
     }
 
-    // Optional: store first/last names in your users table or metadata
+    // store first/last names in your users table or metadata
     try {
       if (fname || lname) {
         await supabaseAdmin
@@ -52,13 +39,8 @@ export async function POST(req: Request) {
       console.warn("profile creation failed:", err.message);
     }
 
-    // 2) Send OTP to the user email (use publishable key)
-    // Use a supabase client with the publishable key to call signInWithOtp
-    const supabasePub = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-      { cookies: nextCookies }
-    );
+    // Send OTP to the user email (use publishable key)
+    const supabasePub = await createClientPub();
 
     const { data: otpData, error: otpError } = await supabasePub.auth.signInWithOtp({
       email,
