@@ -3,13 +3,17 @@
 import React, { useRef, useState } from "react";
 import Input from "../ui/InputField"; // <-- use the Input component
 import Button from "@/components/ui/Button";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 
 export default function EmailVerifyForm() {
 	const DIGITS = 6;
 	const [values, setValues] = useState<string[]>(() => Array(DIGITS).fill(""));
 	const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
   const router = useRouter();
+	const searchParams = useSearchParams()
+	const email = searchParams.get("email") || "";
+	const supabase = createClient()
 
 	const focusInput = (index: number) => {
 		const el = inputsRef.current[index];
@@ -85,21 +89,48 @@ export default function EmailVerifyForm() {
 		e.preventDefault();
 	};
 
-	const handleVerify = () => {
+	const handleVerify = async () => {
 		const code = values.join("");
 		if (code.length !== DIGITS || /\D/.test(code)) {
 			alert("Please enter a valid 6-digit code.");
 			return;
 		}
-		// placeholder - replace with actual verify logic
-		console.log("Verifying OTP:", code);
-		alert(`Verifying OTP: ${code}`);
+		
+		try {
+			const { data, error } = await supabase.auth.verifyOtp({
+				email,
+				token: code,
+				type: "signup",
+			});
+
+			if (error) {
+				console.error("OTP Verification error:", error);
+				alert("Verification failed. Please try again.");
+				return;
+			}
+
+			router.push("/home");
+
+		} catch (err: any) {
+			alert(err.message ?? "Verification failed. Please try again.");
+			console.error("OTP Verification error:", err);
+		}
 	};
 
-	const handleResend = () => {
-		// placeholder - replace with resend logic
-		console.log("Resend OTP requested");
-		alert("OTP resent (placeholder)");
+	const handleResend = async () => {
+		try {
+			const { data, error } = await supabase.auth.signInWithOtp({
+				email,
+				options: { shouldCreateUser: false }
+			});
+
+			if (error) throw error;
+			alert("A new verification code has been sent to your email.");
+		
+		} catch (err: any) {
+			alert(err.message ?? "Resend failed. Please try again.");
+			console.error("Resend OTP error:", err);
+		}
 	};
 
 	return (
