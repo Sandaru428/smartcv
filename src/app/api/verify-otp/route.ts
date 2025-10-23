@@ -6,6 +6,13 @@ const TEMP_LOCK_AFTER = 3;
 const TEMP_LOCK_SECONDS = 30;
 const COOLDOWN_MINUTES = 15;
 
+interface OtpAttempt {
+  lock_until?: string | null;
+  failed_count?: number | null;
+  resend_count?: number | null;
+  last_failed_at?: string | null;
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -19,7 +26,7 @@ export async function POST(req: Request) {
     const supabaseAdmin = await createClientAdmin();
 
     // 1) check lock row
-    let lockRow: any = null
+    let lockRow: OtpAttempt | null = null;
 
     try {
       const { data, error } = await supabaseAdmin
@@ -60,7 +67,7 @@ export async function POST(req: Request) {
     }
 
     // 3) upsert failed_count with cooldown
-    let existing: any = null
+    let existing: OtpAttempt | null = null
     try {
       const { data, error} = await supabaseAdmin
         .from("auth_otp_attempts")
@@ -137,7 +144,7 @@ export async function POST(req: Request) {
 
       if (userId) {
         try {
-          //@ts-ignore
+          //@ts-exept-error
           const del = await supabaseAdmin.auth.admin.deleteUser(userId);
           if (del?.error) {
             await supabaseAdmin
@@ -171,9 +178,9 @@ export async function POST(req: Request) {
       remaining
     }, {status: 401})
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("OTP verify route error:", err)
-    return NextResponse.json({ error: err.message ?? "internal server error" }, { status: 500 });
+    return NextResponse.json({ error: (err as Error).message ?? "internal server error" }, { status: 500 });
   }
 
 }

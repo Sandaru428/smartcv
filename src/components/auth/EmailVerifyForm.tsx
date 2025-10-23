@@ -1,11 +1,9 @@
 "use client";
 
-import React, { use, useEffect, useRef, useState } from "react";
-import Input from "../ui/InputField"; // <-- use the Input component
+import React, { useEffect, useRef, useState } from "react";
+import Input from "@/components/ui/InputField";
 import Button from "@/components/ui/Button";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
-import { verify } from "crypto";
 
 export default function EmailVerifyForm() {
 	const DIGITS = 6;
@@ -21,7 +19,6 @@ export default function EmailVerifyForm() {
 	const router = useRouter();
 	const searchParams = useSearchParams()
 	const email = searchParams.get("email") || "";
-	const supabase = createClient()
 
 	useEffect(() => {
 		let t:number | undefined
@@ -201,9 +198,9 @@ export default function EmailVerifyForm() {
 
 			alert(data?.error ?? "Verification failed. Please try again.");
 
-		} catch (err: any) {
+		} catch (err: unknown) {
 			console.error("Verify request failed", err);
-			alert(err.message ?? "Verification failed. Please try again.");
+			alert((err as Error).message ?? "Verification failed. Please try again.");
 		} finally {
 			setLoading(false);
 		}
@@ -242,9 +239,9 @@ export default function EmailVerifyForm() {
 			}
 
 			alert(data?.error ?? "Resend failed. Please try again.");
-		} catch (err: any) {
+		} catch (err: unknown) {
 			console.error("Resend OTP error:", err);
-			alert(err.message ?? "Resend failed. Please try again.");
+			alert((err as Error).message ?? "Resend failed. Please try again.");
 		} finally {
 			setLoading(false);
 		}

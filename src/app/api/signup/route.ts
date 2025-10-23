@@ -35,8 +35,8 @@ export async function POST(req: Request) {
           }])
       }
 
-    } catch (err: any) {
-      console.warn("profile creation failed:", err.message);
+    } catch (err: unknown) {
+      console.warn("profile creation failed:", (err as Error).message);
     }
 
     // Send OTP to the user email (use publishable key)
@@ -57,7 +57,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ user: createdUser, otp: otpData }, { status: 201 });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message ?? "internal error" }, { status: 500 });
+  } catch (err: unknown) {
+    return NextResponse.json({ error: (err as Error).message ?? "internal error" }, { status: 500 });
   }
 }

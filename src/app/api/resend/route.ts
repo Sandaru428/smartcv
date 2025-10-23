@@ -3,7 +3,13 @@ import { createClientAdmin } from "@/utils/supabase/server";
 
 const RESEND_LIMIT = 3
 const RESEND_LOCK_HOURS = 12
-const TEMP_LOCK_SECONDS = 30
+
+interface OtpAttempt {
+  lock_until?: string | null;
+  failed_count?: number | null;
+  resend_count?: number | null;
+  last_failed_at?: string | null;
+}
 
 export async function POST(req: Request) {
   try {
@@ -15,7 +21,7 @@ export async function POST(req: Request) {
     }
 
     const supabaseAdmin = await createClientAdmin()
-    let existing: any = null
+    let existing: OtpAttempt | null = null
     try {
       const { data, error} = await supabaseAdmin
         .from("auth_otp_attempts")
@@ -89,8 +95,8 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, message: "OTP resent" }, { status: 200 });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error(err);
-    return NextResponse.json({ error: err.message ?? "internal error" }, { status: 500 });
+    return NextResponse.json({ error: (err as Error).message ?? "internal error" }, { status: 500 });
   }
 }
