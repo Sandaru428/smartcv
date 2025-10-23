@@ -1,19 +1,74 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { use, useEffect, useRef, useState } from "react";
 import Input from "../ui/InputField"; // <-- use the Input component
 import Button from "@/components/ui/Button";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
+import { verify } from "crypto";
 
 export default function EmailVerifyForm() {
 	const DIGITS = 6;
 	const [values, setValues] = useState<string[]>(() => Array(DIGITS).fill(""));
+	const [shake, setShake] = useState(false);
+	const [loading, setLoading] = useState(false);
+	const [verifyDisabled, setVerifyDisabled] = useState(false);
+	const [inputDisabled, setInputDisabled] = useState(false);
+	const [resendDisabled, setResendDisabled] = useState(false);
+	const [lockSeconds, setLockSeconds] = useState<number | null>(null);
+	const [resendLockSeconds, setResendLockSeconds] = useState<number | null>(null);
 	const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
-  const router = useRouter();
+	const router = useRouter();
 	const searchParams = useSearchParams()
 	const email = searchParams.get("email") || "";
 	const supabase = createClient()
+
+	useEffect(() => {
+		let t:number | undefined
+		if (lockSeconds && lockSeconds > 0) {
+			setVerifyDisabled(true);
+			setInputDisabled(true);
+			setResendDisabled(false);
+			
+			t = window.setInterval(() => {
+				setLockSeconds ((s) => {
+					if (!s || s <= 1) {
+						setVerifyDisabled(false);
+						setInputDisabled(false);
+						setLockSeconds(null);
+						return null;
+					}
+					return s - 1;
+				});
+			}, 1000);
+		}
+		return () => { if (t) window.clearInterval(t); };
+
+	}, [lockSeconds]);
+
+	useEffect(() => {
+		let t:number | undefined
+		if (resendLockSeconds && resendLockSeconds > 0) {
+			setResendDisabled(true);
+			setVerifyDisabled(true);
+			setInputDisabled(true);
+			
+			t = window.setInterval(() => {
+				setResendLockSeconds ((s) => {
+					if (!s || s <= 1) {
+						setResendDisabled(false);
+						setVerifyDisabled(false);
+						setInputDisabled(false);
+						setResendLockSeconds(null);
+						return null;
+					}
+					return s - 1;
+				});
+			}, 1000);
+		}
+		return () => { if (t) window.clearInterval(t); };
+
+	}, [resendLockSeconds]);
 
 	const focusInput = (index: number) => {
 		const el = inputsRef.current[index];
@@ -21,6 +76,7 @@ export default function EmailVerifyForm() {
 	};
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>, idx: number) => {
+		if (inputDisabled) return;
 		const val = e.target.value.replace(/\D/g, ""); // only digits
 		if (!val) {
 			// empty input (user cleared)
@@ -46,6 +102,8 @@ export default function EmailVerifyForm() {
 	};
 
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, idx: number) => {
+		if (inputDisabled) { e.preventDefault(); return; }
+
 		if (e.key === "Backspace") {
 			if (values[idx]) {
 				// clear current
@@ -73,6 +131,8 @@ export default function EmailVerifyForm() {
 	};
 
 	const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+		if (inputDisabled) { e.preventDefault(); return; }
+
 		const paste = e.clipboardData.getData("text").replace(/\D/g, "");
 		if (!paste) return;
 		const chars = paste.slice(0, DIGITS).split("");
@@ -95,41 +155,98 @@ export default function EmailVerifyForm() {
 			alert("Please enter a valid 6-digit code.");
 			return;
 		}
-		
+
+		if (verifyDisabled) return;
+		setLoading(true);
+
 		try {
-			const { data, error } = await supabase.auth.verifyOtp({
-				email,
-				token: code,
-				type: "signup",
+			const res = await fetch('/api/verify-otp', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ email, token: code })
 			});
 
-			if (error) {
-				console.error("OTP Verification error:", error);
-				alert("Verification failed. Please try again.");
+			const data = await res.json();
+
+			if (res.status === 200) {
+				router.push("/home");
 				return;
 			}
 
-			router.push("/home");
+			if (res.status === 423) {
+				const  seconds = data.lock_seconds ?? 30
+				setLockSeconds(seconds);
+
+				setValues(Array(DIGITS).fill(""));
+				setShake(true)
+				setTimeout(() => setShake(false), 500);
+				focusInput(0);
+				return;
+			}
+
+			if (res.status === 403) {
+				alert("Too many failed attempts - account removed or locked. Please signup again");
+				return;
+			}
+
+			if (res.status === 401) {
+				const remaining = data?.remaining
+				setValues(Array(DIGITS).fill(""));
+				setShake(true)
+				setTimeout(() => setShake(false), 500);
+				focusInput(0)
+				alert(remaining ? `Invalid code. You have ${remaining} attempts remaining.` : "Invalid code.");
+				return;
+			}
+
+			alert(data?.error ?? "Verification failed. Please try again.");
 
 		} catch (err: any) {
+			console.error("Verify request failed", err);
 			alert(err.message ?? "Verification failed. Please try again.");
-			console.error("OTP Verification error:", err);
+		} finally {
+			setLoading(false);
 		}
 	};
 
 	const handleResend = async () => {
+		if (resendDisabled) return;
+		setLoading(true);
+
 		try {
-			const { data, error } = await supabase.auth.signInWithOtp({
-				email,
-				options: { shouldCreateUser: false }
+			const res = await fetch('/api/resend', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ email })
 			});
 
-			if (error) throw error;
-			alert("A new verification code has been sent to your email.");
-		
+			const data = await res.json();
+
+			if (res.status === 200) {
+				alert("A new verification code has been sent to your email.");
+				return;
+			}
+
+			if (res.status === 429) {
+				const seconds = data.lock_seconds ?? 12 * 3600
+				setResendLockSeconds(seconds);
+				alert("Too many resend requests. Please wait before trying again.");
+				return;
+			}
+
+			if (res.status === 423) {
+				const seconds = data.lock_seconds ?? 30
+				setLockSeconds(seconds);
+				alert("You are temporarily locked from verifying. Please wait before trying again.");
+				return;
+			}
+
+			alert(data?.error ?? "Resend failed. Please try again.");
 		} catch (err: any) {
-			alert(err.message ?? "Resend failed. Please try again.");
 			console.error("Resend OTP error:", err);
+			alert(err.message ?? "Resend failed. Please try again.");
+		} finally {
+			setLoading(false);
 		}
 	};
 
@@ -142,7 +259,22 @@ export default function EmailVerifyForm() {
         <h1 className="mb-4 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">Verify Your Email</h1>
         <p className="text-gray-500 dark:text-gray-400 mb-4">Check your email for the one-time code.</p>
 
-        <div className="flex gap-2 justify-center my-4 md:gap-4">
+        {/* simple shake animation injected locally */}
+        <style>{`
+          @keyframes shake {
+            0% { transform: translateX(0); }
+            20% { transform: translateX(-6px); }
+            40% { transform: translateX(6px); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); }
+            100% { transform: translateX(0); }
+          }
+          .shake {
+            animation: shake 400ms ease-in-out;
+          }
+        `}</style>
+
+        <div className={`flex gap-2 justify-center my-4 md:gap-4 ${shake ? "shake" : ""}`}>
           {Array.from({ length: DIGITS }).map((_, idx) => (
             <Input
               key={idx}
@@ -156,24 +288,31 @@ export default function EmailVerifyForm() {
               pattern="[0-9]*"
               className="w-10 h-14 text-center text-lg"
               aria-label={`Digit ${idx + 1}`}
+							disabled={inputDisabled}
             />
           ))}
         </div>
 
         <div className="text-center text-gray-500 dark:text-gray-400 mt-2">
-          code expire
+          {lockSeconds ? (
+						<p>Your account is temporarily locked. Please wait {lockSeconds} second{lockSeconds !== 1 ? 's' : ''} before trying again.</p>
+					) : resendLockSeconds ? (
+						<p>Too many resends. Please wait {Math.ceil((resendLockSeconds ?? 0) / 60)} minute{resendLockSeconds !== 1 ? 's' : ''} before trying again.</p>
+					) : (
+						<p>The code will expire in 6 minutes.</p>
+					)}
         </div>
 
         <div className="w-full my-4">
-          <Button onClick={handleVerify} className="w-full">
-            Verify
+          <Button onClick={handleVerify} disabled={verifyDisabled || loading} className="w-full">
+            {loading ? "Working..." : "Verify"}
           </Button>
         </div>
 
         <div className="mt-2 text-center text-gray-500 dark:text-gray-400">
           <p className="mb-2">
             Didn&apos;t receive the code?
-            <span onClick={handleResend} className="text-blue-500 cursor-pointer"> Resend</span>
+            <span onClick={handleResend} className={`text-blue-500 cursor-pointer ${resendDisabled ? "opacity-50 cursor-not-allowed" : ""}`}> Resend</span>
           </p>
           <p>
             Wrong email?
