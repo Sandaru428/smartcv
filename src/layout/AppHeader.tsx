@@ -3,6 +3,7 @@
 import { ThemeToggleButton } from "@/components/common/ThemeToggleButton";
 import React from "react";
 import AuthButtons from "@/components/common/AuthButtons";
+import UserDropdown from "@/components/common/UserDropdown";
 
 const AppHeader = () => {
 
@@ -14,6 +15,7 @@ const AppHeader = () => {
 
       <div className="flex items-center gap-2 2xsm:gap-3">
         <ThemeToggleButton />
+        <UserDropdown />
         <AuthButtons />
       </div>
 

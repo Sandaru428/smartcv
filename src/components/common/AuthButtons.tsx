@@ -2,13 +2,15 @@
 
 import React, { useEffect, useState } from "react";
 import Button from "@/components/ui/Button";
-import { signout } from "@/hooks/authActions";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 
 const AuthButtons = () => {
   const router = useRouter();
-  const [user, setUser] = useState<any | null>(null);
+  // `undefined` => auth state not yet determined -> avoid flashing auth buttons
+  // `null` => explicitly not signed in
+  // user object => signed in
+  const [user, setUser] = useState<any | null | undefined>(undefined);
 
   useEffect(() => {
     const supabase = createClient();
@@ -34,22 +36,20 @@ const AuthButtons = () => {
     };
   }, []);
 
+  // If auth status isn't resolved yet, render nothing to avoid flicker.
+  if (user === undefined) return null;
+
+  // Only show AuthButtons to unauthenticated users
+  if (user) return null;
+
   return (
     <>
-      {!user ? (
-        <>
-          <Button variant="primary" size="xs" onClick={() => router.push("/signup")}>
-            Sign Up
-          </Button>
-          <Button variant="outline" size="xs" onClick={() => router.push("/signin")}>
-            Sign In
-          </Button>
-        </>
-      ) : (
-        <Button variant="outline" size="xs" onClick={signout}>
-          Sign Out
-        </Button>
-      )}
+      <Button variant="primary" size="xs" onClick={() => router.push("/signup")}>
+        Sign Up
+      </Button>
+      <Button variant="outline" size="xs" onClick={() => router.push("/signin")}>
+        Sign In
+      </Button>
     </>
   );
 };
