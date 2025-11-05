@@ -55,7 +55,9 @@ export async function POST(req: Request) {
      if (!existing) {
       await supabaseAdmin
         .from("auth_otp_attempts")
-        .insert([{ email, resend_count: 1, last_resend_at: nowIso, createdAt: nowIso }]);
+        .upsert({ email, resend_count: 1, last_resend_at: nowIso, created_at: nowIso },
+          { onConflict: "email", ignoreDuplicates: false }
+        );
 
     } else {
       const newResend = (existing.resend_count ?? 0) + 1;
