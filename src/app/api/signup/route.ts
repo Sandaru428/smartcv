@@ -23,20 +23,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: createError.message }, { status: 500 });
     }
 
-    // store first/last names in your users table or metadata
+    // Store first/last name in a pending_profiles table so we only create
+    // the real `profiles` row after the user verifies their email.
     try {
-      if (fname || lname) {
-        await supabaseAdmin
-          .from("profiles")
-          .insert([{
-            id: createdUser.user?.id,
-            first_name: body.fname ?? null,
-            last_name: body.lname ?? null
-          }])
+      if (createdUser?.user?.id) {
+        await supabaseAdmin.from("pending_profiles").insert([{
+          id: createdUser.user.id,
+          email,
+          first_name: fname ?? null,
+          last_name: lname ?? null,
+          created_at: new Date().toISOString()
+        }]);
       }
-
     } catch (err: unknown) {
-      console.warn("profile creation failed:", (err as Error).message);
+      console.warn("pending_profiles insert failed:", (err as Error).message);
     }
 
     // Send OTP to the user email (use publishable key)

@@ -62,6 +62,55 @@ export async function POST(req: Request) {
     const verify = await supabaseAdmin.auth.verifyOtp({ email, token, type: "signup" });
 
     if (!verify.error) {
+      // Move pending profile to real profiles table now that email is verified
+      try {
+        const { data: pending, error: pErr } = await supabaseAdmin
+          .from("pending_profiles")
+          .select("id, email, first_name, last_name")
+          .eq("email", email)
+          .single();
+
+        if (!pErr && pending?.id) {
+          try {
+            // check if profile already exists
+            const { data: existing, error: existingErr } = await supabaseAdmin
+              .from("profiles")
+              .select("id")
+              .eq("id", pending.id)
+              .single();
+
+            if (existingErr) {
+              // insert new profile
+              await supabaseAdmin.from("profiles").insert([{
+                id: pending.id,
+                email: pending.email,
+                first_name: pending.first_name ?? null,
+                last_name: pending.last_name ?? null,
+                created_at: new Date().toISOString()
+              }]);
+            } else {
+              // update existing profile
+              await supabaseAdmin.from("profiles").update({
+                email: pending.email,
+                first_name: pending.first_name ?? null,
+                last_name: pending.last_name ?? null
+              }).eq("id", pending.id);
+            }
+
+            // delete the pending row (best-effort)
+            try {
+              await supabaseAdmin.from("pending_profiles").delete().eq("email", email);
+            } catch (e) {
+              console.warn("failed to delete pending_profiles:", (e as Error).message);
+            }
+          } catch (e) {
+            console.warn("profiles insert/update failed:", (e as Error).message);
+          }
+        }
+      } catch (e) {
+        console.warn("pending_profiles lookup failed:", (e as Error).message);
+      }
+
       await supabaseAdmin.from("auth_otp_attempts").delete().eq("email", email);
       return NextResponse.json({ success: true }, { status: 200 });
     }
