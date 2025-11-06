@@ -33,18 +33,75 @@ export interface ResumeData {
 interface ResumeFormProps {
   resumeData: ResumeData;
   setResumeData: React.Dispatch<React.SetStateAction<ResumeData>>;
+  projectId?: string | null;
+  setProjectId?: (id: string | null) => void;
+  templateId?: string | null;
 }
 
-export default function ResumeForm({ resumeData, setResumeData }: ResumeFormProps) {
+export default function ResumeForm({ resumeData, setResumeData, projectId, setProjectId, templateId }: ResumeFormProps) {
   const [step, setStep] = React.useState<number>(0);
   const steps = ["General", "Education", "Projects", "Experience"];
 
   const goNext = () => setStep((s) => Math.min(s + 1, steps.length - 1));
   const goBack = () => setStep((s) => Math.max(s - 1, 0));
 
-  const handleSubmit = (e?: React.FormEvent) => {
+  const saveProject = async (opts?: { name?: string }) => {
+    try {
+      const body = {
+        name: opts?.name ?? 'Untitled Project',
+        // prefer explicit prop templateId passed from editor (URL-driven)
+        templateId: templateId ?? null,
+        data: resumeData,
+        step,
+      }
+      const safeProjectId = projectId && projectId !== 'undefined' && projectId !== 'null' ? projectId : null
+
+      if (safeProjectId) {
+        const res = await fetch(`/api/projects?id=${encodeURIComponent(safeProjectId)}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        })
+        if (!res.ok) {
+          let bodyText = ''
+          try {
+            bodyText = await res.text()
+          } catch (e) {
+            bodyText = String(e)
+          }
+          throw new Error(`Failed to update project (status=${res.status}): ${bodyText}`)
+        }
+        const json = await res.json()
+        return json
+      } else {
+        const res = await fetch(`/api/projects`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        })
+        if (!res.ok) {
+          let bodyText = ''
+          try {
+            bodyText = await res.text()
+          } catch (e) {
+            bodyText = String(e)
+          }
+          throw new Error(`Failed to create project (status=${res.status}): ${bodyText}`)
+        }
+        const json = await res.json()
+        const id = json?.id ?? null
+        if (id && setProjectId) setProjectId(id)
+        return json
+      }
+    } catch (e) {
+      console.error('Project save error', e)
+    }
+  }
+
+  const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    console.log("Submitting resume data:", resumeData);
+    await saveProject()
+    console.log('Submitting resume data:', resumeData);
   };
 
   return (
@@ -134,7 +191,11 @@ export default function ResumeForm({ resumeData, setResumeData }: ResumeFormProp
           {step < steps.length - 1 ? (
             <button
               type="button"
-              onClick={goNext}
+              onClick={async () => {
+                // on step completion, save progress
+                await saveProject()
+                goNext()
+              }}
               className="px-4 py-2 rounded-lg bg-emerald-500 text-white"
             >
               Next

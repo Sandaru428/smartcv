@@ -41,3 +41,18 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Database migration for projects
+
+This project stores per-user project drafts in a new `projects` table and adds a `project_id` column to the existing `profiles` table.
+
+The SQL migration is included at `db/migrations/20251106_create_projects_and_profile_project_id.sql` — run it against your Supabase/Postgres instance. Example using psql:
+
+```bash
+# from project root, adapt connection with your DATABASE_URL
+psql "$DATABASE_URL" -f db/migrations/20251106_create_projects_and_profile_project_id.sql
+```
+
+Notes:
+- The migration uses `pgcrypto`'s `gen_random_uuid()`; if your DB uses a different UUID extension adjust accordingly.
+- If your Supabase RLS policies restrict updates to `profiles`, updating the profile's `project_id` may require running the migration with elevated privileges or adjusting policies.

@@ -86,13 +86,13 @@ export default function LatexPreview({ resumeData, templateId }: LatexPreviewPro
       } else {
         // no template selected — provide a default base template WITH placeholders
         const defaultBase = `
-\\documentclass{article}
-\\begin{document}
-\\section*{\${resumeData.name}}
-Email: \${resumeData.email} \\\\
-\\subsection*{Skills}
-\${resumeData.skills}
-\\end{document}
+          \\documentclass{article}
+          \\begin{document}
+          \\section*{\${resumeData.name}}
+          Email: \${resumeData.email} \\\\
+          \\subsection*{Skills}
+          \${resumeData.skills}
+          \\end{document}
         `;
         if (!cancelled) {
           setBaseTemplate(defaultBase);
