@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import templates from "../../data/templates.json";
 
 // Accept any incoming shape so external ResumeData types are assignable
@@ -24,7 +24,7 @@ export default function LatexPreview({ resumeData, templateId }: LatexPreviewPro
   const [error, setError] = useState<string | null>(null);
 
   // runtime-safe accessor: accepts unknown-shaped data and returns value or fallback to general[0][key]
-  function getValueFromData(data: unknown, key: string): unknown {
+  const getValueFromData = useCallback((data: unknown, key: string): unknown => {
     if (!data || typeof data !== "object") return undefined;
     const obj = data as Record<string, unknown>;
     let val = obj[key];
@@ -34,16 +34,16 @@ export default function LatexPreview({ resumeData, templateId }: LatexPreviewPro
       val = first ? first[key] : undefined;
     }
     return val;
-  }
+  }, []);
 
   // helper: replace ${resumeData.key} with values from resumeData or fallback to first general entry
-  function interpolateTemplate(template: string, data?: unknown) {
+  const interpolateTemplate = useCallback((template: string, data?: unknown) => {
     if (!template) return "";
     return template.replace(/\$\{resumeData\.([a-zA-Z0-9_]+)\}/g, (_m: string, key: string) => {
       const val = getValueFromData(data, key);
       return val != null ? String(val) : "";
     });
-  }
+  }, [getValueFromData]);
 
   useEffect(() => {
     let cancelled = false;
@@ -112,7 +112,7 @@ Email: \${resumeData.email} \\\\
   useEffect(() => {
     const final = interpolateTemplate(baseTemplate ?? "", resumeData);
     setLatexCode(final);
-  }, [baseTemplate, resumeData]);
+  }, [baseTemplate, resumeData, interpolateTemplate]);
 
   // renderHighlighted: wraps substituted values in a colored span, with fallback to general[0]
   function renderHighlighted(template: string, data?: unknown): React.ReactNode[] {

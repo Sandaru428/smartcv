@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Input from "@/components/ui/InputField";
 import Button from "@/components/ui/Button";
 import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
 
 export default function EmailVerifyForm() {
 	const DIGITS = 6;
@@ -251,7 +252,7 @@ export default function EmailVerifyForm() {
 		<div className="flex flex-col items-center w-full py-8 min-h-[90vh] justify-center">
       <div className="flex flex-col justify-center items-center w-full max-w-md mx-auto p-8 border border-gray-300 rounded-2xl shadow-md dark:border-gray-600">
         
-        <img src="/favicon.ico" alt="App favicon" aria-hidden className="w-15 h-15 mb-8" />
+				<Image src="/favicon.ico" alt="App favicon" aria-hidden width={60} height={60} className="w-15 h-15 mb-8" />
 
         <h1 className="mb-4 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">Verify Your Email</h1>
         <p className="text-gray-500 dark:text-gray-400 mb-4">Check your email for the one-time code.</p>

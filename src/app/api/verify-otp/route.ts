@@ -37,8 +37,8 @@ export async function POST(req: Request) {
       
       if (!error) lockRow = data;
 
-    } catch (e) {
-      console.error("DB lookup error:", e);
+    } catch (err) {
+      console.error("DB lookup error:", err);
       lockRow = null
     }
 
@@ -73,7 +73,7 @@ export async function POST(req: Request) {
         if (!pErr && pending?.id) {
           try {
             // check if profile already exists
-            const { data: existing, error: existingErr } = await supabaseAdmin
+            const { error: existingErr } = await supabaseAdmin
               .from("profiles")
               .select("id")
               .eq("id", pending.id)
@@ -126,8 +126,8 @@ export async function POST(req: Request) {
       
       if (!error) existing = data
 
-    } catch (e) {
-      console.error("DB lookup error:", e);
+    } catch (err) {
+      console.error("DB lookup error:", err);
       existing = null
     }
 
@@ -189,7 +189,7 @@ export async function POST(req: Request) {
           .single();
 
         if (!uError && uRow?.id) userId = uRow.id;
-      } catch (e) { userId = null; }
+  } catch { userId = null; }
 
       if (userId) {
         try {
@@ -201,7 +201,7 @@ export async function POST(req: Request) {
               .delete()
               .eq("id", userId);
           }
-        } catch (e) {
+        } catch {
           try {
             await supabaseAdmin
               .from("auth.users")

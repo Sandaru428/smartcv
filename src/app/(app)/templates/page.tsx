@@ -1,5 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import templates from "../../../data/templates.json";
 
 interface Template {
@@ -42,7 +43,13 @@ export default function TemplatesPage() {
             }}
             className="rounded-2xl overflow-hidden shadow hover:shadow-lg cursor-pointer bg-gray-100 dark:bg-gray-800 transition"
           >
-            <img src={t.previewImage} alt={t.name} className="w-full" />
+            <Image
+              src={t.previewImage}
+              alt={t.name}
+              width={800}
+              height={450}
+              className="w-full h-auto"
+            />
             <div className="p-4">
               <h2 className="font-semibold text-lg">{t.name}</h2>
               <p className="text-sm text-gray-600 dark:text-gray-400">

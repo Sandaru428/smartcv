@@ -20,6 +20,13 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Environment notes
+
+- If you see a "Slow filesystem detected" message during builds, it can be caused by running the project from a network-mounted drive or by antivirus software scanning the project files. To improve build speed and avoid intermittent filesystem issues:
+	- Keep the project on a local disk when possible (move it out of network shares).
+	- Exclude the project directory from real-time antivirus scanning (particularly the `.next` build output).
+
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

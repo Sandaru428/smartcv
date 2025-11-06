@@ -31,7 +31,7 @@ export async function POST(req: Request) {
       
       if (!error) existing = data
 
-    } catch (e) {
+    } catch {
       existing = null
     }
 
