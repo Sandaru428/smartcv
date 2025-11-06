@@ -3,12 +3,13 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import templates from "../../../data/templates.json";
 import { useEffect, useState } from "react";
+import { ResumeData } from '@/components/home/ResumeForm';
 
 interface ProjectRow {
   id: string;
   name?: string;
   template_id?: string | null;
-  data?: any;
+  data?: ResumeData | null;
   step?: number;
   created_at?: string;
 }
