@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useEffect, useState } from "react";
+import type { User, Session } from "@supabase/supabase-js";
 import Button from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
@@ -10,7 +11,7 @@ const AuthButtons = () => {
   // `undefined` => auth state not yet determined -> avoid flashing auth buttons
   // `null` => explicitly not signed in
   // user object => signed in
-  const [user, setUser] = useState<any | null | undefined>(undefined);
+  const [user, setUser] = useState<User | null | undefined>(undefined);
 
   useEffect(() => {
     const supabase = createClient();
@@ -23,12 +24,12 @@ const AuthButtons = () => {
     });
 
     // subscribe to auth state changes to keep UI in sync
-    const { data: subData } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session: Session | null) => {
       if (!mounted) return;
-      setUser((session as any)?.user ?? null);
+      setUser(session?.user ?? null);
     });
 
-    const subscription = (subData as any)?.subscription;
+    const subscription = listener?.subscription;
 
     return () => {
       mounted = false;

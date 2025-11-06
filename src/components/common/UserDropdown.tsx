@@ -1,12 +1,13 @@
 "use client"
 
 import React, { useEffect, useRef, useState } from "react";
+import type { User, Session } from "@supabase/supabase-js";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { signout } from "@/hooks/authActions";
 
 const UserDropdown: React.FC = () => {
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
@@ -22,12 +23,12 @@ const UserDropdown: React.FC = () => {
     });
 
     // subscribe to auth state changes to keep UI in sync
-    const { data: subData } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session: Session | null) => {
       if (!mounted) return;
-      setUser((session as any)?.user ?? null);
+      setUser(session?.user ?? null);
     });
 
-    const subscription = (subData as any)?.subscription;
+    const subscription = listener?.subscription;
 
     return () => {
       mounted = false;
