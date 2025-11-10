@@ -45,7 +45,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} dark:bg-gray-900 p-2 mx-auto md:p-4`}
+        className={`${geistSans.variable} ${geistMono.variable} dark:bg-gray-900 p-2 mx-auto md:p-4 custom-scrollbar`}
       >
         {/* run before React hydrates to avoid light/dark flash */}
         <script dangerouslySetInnerHTML={{ __html: setInitialTheme }} />

@@ -107,3 +107,32 @@ export async function PUT(req: Request) {
 		return new NextResponse(m, { status: 500 })
 	}
 }
+
+export async function DELETE(req: Request) {
+	try {
+		const url = new URL(req.url)
+		const id = url.searchParams.get('id')
+		if (!id) return new NextResponse('Missing id', { status: 400 })
+
+		const supabase = await createClientPub()
+		const { data: userRes } = await supabase.auth.getUser()
+		const user = userRes.user
+		if (!user) return new NextResponse('Unauthorized', { status: 401 })
+
+		// Delete the project row scoped to user
+		const { error } = await supabase.from('projects').delete().eq('id', id).eq('user_id', user.id)
+		if (error) return new NextResponse(error.message, { status: 500 })
+
+		// join table has ON DELETE CASCADE but attempt cleanup if needed (best-effort)
+		try {
+			await supabase.from('profile_projects').delete().eq('project_id', id).eq('profile_id', user.id)
+		} catch (e) {
+			console.warn('Failed to cleanup profile_projects join row', e)
+		}
+
+		return new NextResponse(null, { status: 204 })
+	} catch (err: unknown) {
+		const m = err instanceof Error ? err.message : String(err)
+		return new NextResponse(m, { status: 500 })
+	}
+}

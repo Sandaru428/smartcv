@@ -1,0 +1,579 @@
+\documentclass[10pt, letterpaper]{article}
+
+% Packages:
+\usepackage[
+    ignoreheadfoot, % set margins without considering header and footer
+    top=2 cm, % seperation between body and page edge from the top
+    bottom=2 cm, % seperation between body and page edge from the bottom
+    left=2 cm, % seperation between body and page edge from the left
+    right=2 cm, % seperation between body and page edge from the right
+    footskip=1.0 cm, % seperation between body and footer
+    % showframe % for debugging 
+]{geometry} % for adjusting page geometry
+\usepackage{titlesec} % for customizing section titles
+\usepackage{tabularx} % for making tables with fixed width columns
+\usepackage{array} % tabularx requires this
+\usepackage[dvipsnames]{xcolor} % for coloring text
+\definecolor{primaryColor}{RGB}{0, 79, 144} % define primary color
+\usepackage{enumitem} % for customizing lists
+\usepackage{fontawesome5} % for using icons
+\usepackage{amsmath} % for math
+\usepackage[
+    pdftitle={${resumeData.name}},
+    pdfauthor={${resumeData.name}},
+    pdfcreator={LaTeX with RenderCV},
+    colorlinks=true,
+    urlcolor=primaryColor
+]{hyperref} % for links, metadata and bookmarks
+\usepackage[pscoord]{eso-pic} % for floating text on the page
+\usepackage{calc} % for calculating lengths
+\usepackage{bookmark} % for bookmarks
+\usepackage{lastpage} % for getting the total number of pages
+\usepackage{changepage} % for one column entries (adjustwidth environment)
+\usepackage{paracol} % for two and three column entries
+\usepackage{ifthen} % for conditional statements
+\usepackage{needspace} % for avoiding page brake right after the section title
+\usepackage{iftex} % check if engine is pdflatex, xetex or luatex
+
+% Ensure that generate pdf is machine readable/ATS parsable:
+\ifPDFTeX
+    \input{glyphtounicode}
+    \pdfgentounicode=1
+    % \usepackage[T1]{fontenc} % this breaks sb2nov
+    \usepackage[utf8]{inputenc}
+    \usepackage{lmodern}
+\fi
+
+
+
+% Some settings:
+\AtBeginEnvironment{adjustwidth}{\partopsep0pt} % remove space before adjustwidth environment
+\pagestyle{empty} % no header or footer
+\setcounter{secnumdepth}{0} % no section numbering
+\setlength{\parindent}{0pt} % no indentation
+\setlength{\topskip}{0pt} % no top skip
+\setlength{\columnsep}{0cm} % set column seperation
+\makeatletter
+\let\ps@customFooterStyle\ps@plain % Copy the plain style to customFooterStyle
+\makeatother
+\pagestyle{customFooterStyle}
+
+\titleformat{\section}{\needspace{4\baselineskip}\bfseries\large}{}{0pt}{}[\vspace{1pt}\titlerule]
+
+\titlespacing{\section}{
+    % left space:
+    -1pt
+}{
+    % top space:
+    0.3 cm
+}{
+    % bottom space:
+    0.2 cm
+} % section title spacing
+
+\renewcommand\labelitemi{$\circ$} % custom bullet points
+\newenvironment{highlights}{
+    \begin{itemize}[
+        topsep=0.10 cm,
+        parsep=0.10 cm,
+        partopsep=0pt,
+        itemsep=0pt,
+        leftmargin=0.4 cm + 10pt
+    ]
+}{
+    \end{itemize}
+} % new environment for highlights
+
+\newenvironment{highlightsforbulletentries}{
+    \begin{itemize}[
+        topsep=0.10 cm,
+        parsep=0.10 cm,
+        partopsep=0pt,
+        itemsep=0pt,
+        leftmargin=10pt
+    ]
+}{
+    \end{itemize}
+} % new environment for highlights for bullet entries
+
+
+\newenvironment{onecolentry}{
+    \begin{adjustwidth}{
+        0.2 cm + 0.00001 cm
+    }{
+        0.2 cm + 0.00001 cm
+    }
+}{
+    \end{adjustwidth}
+} % new environment for one column entries
+
+\newenvironment{twocolentry}[2][]{
+    \onecolentry
+    \def\secondColumn{#2}
+    \setcolumnwidth{\fill, 4.5 cm}
+    \begin{paracol}{2}
+}{
+    \switchcolumn \raggedleft \secondColumn
+    \end{paracol}
+    \endonecolentry
+} % new environment for two column entries
+
+\newenvironment{header}{
+    \setlength{\topsep}{0pt}\par\kern\topsep\centering\linespread{1.5}
+}{
+    \par\kern\topsep
+} % new environment for the header
+
+\newcommand{\placelastupdatedtext}{% \placetextbox{<horizontal pos>}{<vertical pos>}{<stuff>}
+  \AddToShipoutPictureFG*{% Add <stuff> to current page foreground
+    \put(
+        \LenToUnit{\paperwidth-2 cm-0.2 cm+0.05cm},
+        \LenToUnit{\paperheight-1.0 cm}
+    ){\vtop{{\null}\makebox[0pt][c]{
+        \small\color{gray}\textit\hspace{\widthof}
+    }}}%
+  }%
+}%
+
+% save the original href command in a new command:
+\let\hrefWithoutArrow\href
+
+% new command for external links:
+\renewcommand{\href}[2]{\hrefWithoutArrow{#1}{\ifthenelse{\equal{#2}{}}{ }{#2 }\raisebox{.15ex}{\footnotesize \faExternalLink*}}}
+
+
+\begin{document}
+    \newcommand{\AND}{\unskip
+        \cleaders\copy\ANDbox\hskip\wd\ANDbox
+        \ignorespaces
+    }
+    \newsavebox\ANDbox
+    \sbox\ANDbox{}
+
+    \placelastupdatedtext
+    \begin{header}
+        \textbf{\fontsize{24 pt}{24 pt}\selectfont ${resumeData.name}} \\
+        \vspace{0.3 cm}
+         \textbf{\fontsize{24 pt}{24 pt}\selectfont ${resumeData.role}}
+
+        \vspace{0.3 cm}
+
+        \normalsize
+        \mbox{{\color{black}\footnotesize\faMapMarker*}\hspace*{0.13cm}${resumeData.address}
+}%
+        \kern 0.25 cm%
+        \AND%
+        \kern 0.25 cm%
+        \mbox{\hrefWithoutArrow{mailto:${resumeData.email}}{\color{black}{\footnotesize\faEnvelope[regular]}\hspace*{0.13cm}${resumeData.email}}}%
+        \kern 0.25 cm%
+        \AND%
+        \kern 0.25 cm%
+        \mbox{\hrefWithoutArrow{tel:${resumeData.phone}}{\color{black}{\footnotesize\faPhone*}\hspace*{0.13cm}${resumeData.phone}}}%
+}}%
+        \kern 0.25 cm%
+        \AND%
+        \kern 0.25 cm%
+        \mbox{\hrefWithoutArrow{${resumeData.portfolio}}{\color{black}{\footnotesize\faLink}\hspace*{0.13cm}portfolio}}%
+        \kern 0.25 cm%
+        \AND%
+        \kern 0.25 cm%
+        \mbox{\hrefWithoutArrow{${resumeData.linkedin}}{\color{black}{\footnotesize\faLinkedinIn}\hspace*{0.13cm}${resumeData.name}}}%
+        \kern 0.25 cm%
+        \AND%
+        \kern 0.25 cm%
+        \mbox{\hrefWithoutArrow{${resumeData.github}}{\color{black}{\footnotesize\faGithub}\hspace*{0.13cm}${resumeData.name}}}%
+    \end{header}
+
+    \vspace{0.3 cm - 0.3 cm}
+
+
+    \section{ABOUT ME}
+        
+        \begin{onecolentry}
+            ${resumeData.about}
+        \end{onecolentry}
+
+        \vspace{0.2 cm}
+
+    \section{TECHNICAL SKILLS}
+
+    \begin{onecolentry}
+        \begin{highlightsforbulletentries}
+
+    \item \textbf{Programming Languages:} Python, Java, C, C\#
+    \item \textbf{Web Developing:} HTML, CSS, React JS, React TS, Bootstrap, PHP, .NET 
+    \item \textbf{DataBase:} MYSQL, MongoDB, SQL Server, Oracle
+    \item \textbf{Frameworks:} Laravel
+    \item \textbf{Containerization \& Tools:} Docker
+    \item \textbf{Version Control:} Git, GitHub, Azure DevOps
+     \item \textbf{Hardware Programming:} Arduino C
+     
+        \end{highlightsforbulletentries}
+    \end{onecolentry}
+    
+   \section{SOFT SKILLS}
+
+\begin{tabular}{ll}
+    • Critical Thinking & • Leadership \\
+    • Being Punctual & • Strong Communication \\
+    • Time Management & • Teamwork and Adaptability \\
+\end{tabular}
+
+
+
+    \section{PROFESSIONAL EXPERIENCE}
+        
+        \begin{twocolentry}{
+     
+        \textit{July 2024 – Dec 2024}}
+            \textbf{Software Engineering Intern}
+            
+            \textit{Centry Consulting}
+        \end{twocolentry}
+
+        \vspace{0.10 cm}
+        \begin{onecolentry}
+            \begin{itemize}
+    \item Worked as a Full-Stack Developer at Centry Consulting Pvt Ltd.
+    \item Contributed to the development and maintenance of web applications using React.js, .NET, Laravel, and SQL Server.
+    \item Handled both front-end and back-end development, including RESTful API integration.
+    \item Deployed applications using Docker for containerized services.
+\end{itemize}
+
+        \end{onecolentry}
+
+        \vspace{1\baselineskip}
+         \begin{twocolentry}{
+     
+        \textit{Dec 2024 – Present}}
+            \textbf{Part Time Software Engineer}
+            
+            \textit{Centry Consulting}
+        \end{twocolentry}
+
+        \vspace{0.20 cm}
+        \begin{onecolentry}
+            \begin{itemize}
+    \item esigned and developed an internal Time Reporting Tool with a clean, scalable architecture, ensuring accurate tracking and reporting of employee work hours.
+    \item Built a mobile-responsive frontend using React and TypeScript, enhancing user experience across desktops, tablets, and mobile devices.
+    \item Implemented secure backend services using .NET and integrated them with SQL Server for efficient data handling and storage.
+    \item Managed authentication and user roles with Keycloak, including realm setup and custom login UI, ensuring secure and role-based access control.
+\end{itemize}
+
+        \end{onecolentry}
+        
+    \vspace{1\baselineskip}
+    \vspace{1\baselineskip}
+         \begin{twocolentry}{
+     
+        \textit{2023 – 2024}}
+            \textbf{Volunteer Teacher - Nanathambara}
+            
+            \textit{Educational Outreach Program}
+        \end{twocolentry}
+
+        \vspace{0.20 cm}
+        \begin{onecolentry}
+            \begin{itemize}
+    \item Designed and delivered comprehensive courses in Arduino fundamentals and Python Programming Basics.
+    \item Conduct Teaching Sessions to enhance technical literacy among school students and teachers.
+\end{itemize}
+
+        \end{onecolentry}
+        
+    \section{EDUCATION}
+        \begin{twocolentry}{
+                
+        \textit{2021 – Present}}
+            \textbf{University Of Peradeniya}
+
+            \textit{BSc.Eng(HONS) Specializing in Computer Engineering}
+        \end{twocolentry}
+
+        \vspace{0.10 cm}
+        \begin{onecolentry}
+            \begin{highlights}
+                \item GPA: 3.3/4.0 \
+                \item \textbf{Coursework:}
+            Advanced Sofware Engineering,
+            Advanced Database Systems,
+            Machine Learning,
+            Image Processing,
+            Data Structures and Algorithms,
+            Computer Architecture,
+            Embedded Systems,
+            Computer Networks,
+            Industrial Networks,
+            Calculus,
+            Linear Algebra
+       
+            \end{highlights}
+        \end{onecolentry} 
+        
+        \vspace{1\baselineskip}
+        
+        \begin{twocolentry}{     
+        \textit{2005 – 2019}}
+            \textbf{H/Debarawewa National College} \\
+            \textit{Primary And Secondary Education}
+        \end{twocolentry}
+
+        \vspace{0.10 cm}
+        \begin{onecolentry}
+            \begin{highlights}
+                \item GCE A/L (2019) - 2A’S 1B(Physics) \
+                \item GCE O/L (2015) - 8A’S 1B(Music) \
+            \end{highlights}
+        \end{onecolentry}
+
+
+
+    \section{CERTIFICATES}
+    \begin{onecolentry}
+        \begin{highlightsforbulletentries}
+
+    \item Programming for Everybody (Getting Started with Python) Online
+      course offered by University of Michigan through Coursera.
+ \item Introduction to Java Online Course by LearnQuest through coursera.
+ \item Basic Of Machine Learning Provided By Great Learning Academy.
+ \item Leadership and Management Through Great Learning Academy.
+ \item AWS For Beginners provided by Great Learning Academy.
+ \item ACES Pre Coders 2024 - 10th place over 50 teams (6 hour coding
+ competition).
+ \item Aces Coders 2024 - 35th place over 100 teams (12 hour inter university
+ coding competition ).
+ \item Aces Hackothon 2023 -Participation under Other category(Two day
+ competition over 40 participating teams.
+        \end{highlightsforbulletentries}
+    \end{onecolentry}
+
+
+    \section{PROJECTS}
+        
+        \begin{twocolentry}{
+            \textit{\href{https://github.com/jeevajith123/e19-3yp-Pera-Ride}{\footnotesize\faGithub}}}
+            \textbf{Pera Ride (Bicycle Sharing System)  | Third Year Project }
+        \end{twocolentry}
+
+        \vspace{0.10 cm}
+        \begin{onecolentry}
+            \begin{highlights}
+                \item Contributed to the PeraRide project, developing a pioneering solution for transportation challenges in Sri Lankan cities and
+ universities. Additionally, this project involved a unique integration of software, hardware, and networking components.
+                \item Tools Used:  React JS,React Native, Express , MongDB ,GitHub, AWS
+
+            \end{highlights}
+        \end{onecolentry}
+
+
+        \vspace{0.2 cm}
+
+        \begin{twocolentry}{
+        }
+            \textbf{Low Complexity Algorithms For Arrhythmia Detection | Final Year Project}
+        \end{twocolentry}
+
+        \vspace{0.10 cm}
+        \begin{onecolentry}
+            \begin{highlights}
+                \item Designed a lightweight arrhythmia detection system focused on energy efficiency and high accuracy for wearable and embedded devices with the MIT-BIH dataset using CNNs and SNNs.
+                \item Tools/Technologies: Python, CNN, SNN, MIT-BIH Dataset, NumPy, Matplotlib
+            \end{highlights}
+        \end{onecolentry}
+
+        \vspace{0.2 cm}
+         \begin{twocolentry}{
+
+\textit{\href{https://github.com/jeevajith123/e19-co227-Dental-patient-management-system}{\footnotesize\faGithub}}}
+            \textbf{ Dental patient management system (Group)}
+        \end{twocolentry}
+
+        \vspace{0.10 cm}
+        \begin{onecolentry}
+            \begin{highlights}
+                \item Developed a Dental Patient Management System to streamline Patient data collection at Peradeniya Hospital in collaboration with the Faculty of Science. 
+                \item Tools Used: React JS,React Native, Express , MongDB ,GitHub, AWS
+              
+            \end{highlights}
+        \end{onecolentry}
+
+
+        \vspace{0.2 cm}
+        
+        \begin{twocolentry}{
+            \textit{\href{https://github.com/jeevajith123/e19-CO544-Bitcoin-Cost-Forecast-System}{\footnotesize\faGithub}}}
+            \textbf{Bitcoin Cost Forecast System With ML (Group) }
+        \end{twocolentry}
+
+        \vspace{0.10 cm}
+       
+        \begin{onecolentry}
+            \begin{highlights}
+                \item Developed a Bitcoin price prediction system using machine learning to analyze historical data and forecast market trends for informed decision-making.
+                
+                \item Tools/Technologies:Python,Scikit-learn,XGBoost / Random Forest / Linear Regressio,Google Colab,AWS
+            \end{highlights}
+        \end{onecolentry}
+
+         \vspace{0.2 cm}
+
+        \begin{twocolentry}{
+            \textit{\href{https://github.com/jeevajith123/e19-co225-School-Attendance-Management-System-Mobile-Application}{\footnotesize\faGithub}}}
+            \textbf{School Attendance Management System (Group) }
+        \end{twocolentry}
+
+        \vspace{0.10 cm}
+        \begin{onecolentry}
+            \begin{highlights}
+                \item Developing a mobile app to revolutionize attendance tracking, addressing issues like errors and inefficiency. 
+Features include parent access to attendance records, communication with teachers, and absence alerts.
+                
+                \item Technolgies : Java, Firebase,GitHub
+            \end{highlights}
+        \end{onecolentry}
+        \vspace{0.2 cm}
+         \begin{twocolentry}{
+\textit{\href{https://github.com/jeevajith123/e19-co226-Auction-Website}{\footnotesize\faGithub}}}
+            \textbf{ Online Auction Website (Group)}
+        \end{twocolentry}
+
+        \vspace{0.10 cm}
+        \begin{onecolentry}
+            \begin{highlights}
+                \item Created an innovative online auction website designed to streamline buying and selling experiences. This platform offers
+ users a seamless interface to participate in auctions, leveraging cutting-edge technology to enhance bidding processes and
+ facilitate secure transactions. 
+                \item Technolgies : React JS, SpringBoot , MYSQL ,GitHub
+              
+            \end{highlights}
+        \end{onecolentry}
+                \vspace{0.2 cm}
+ \begin{twocolentry}{
+
+\textit{\href{https://github.com/jeevajith123/Currency_Convert_System}{\footnotesize\faGithub}}}
+            \textbf{ Currency Convert System (Individual)}
+        \end{twocolentry}
+
+        \vspace{0.10 cm}
+        \begin{onecolentry}
+            \begin{highlights}
+                \item Developed a Currency Convert System that provides real-time exchange rate conversions with a responsive and user-friendly interface, ensuring accuracy and reliability through thorough testing
+                
+                \item  Technologies : React JS,Express,MongoDB,NodeJS
+              
+            \end{highlights}
+        \end{onecolentry}
+
+\section*{ACHIEVEMENTS}
+\begin{itemize}
+    \item ACES Pre-Coders V11.0 - (Rank-10 more than 50 teams)
+    \item ACES Coders V11.0 (Rank-35 more than 100
+ teams)
+ \item ACES Hackathon 2023 (Rank-3 Under Other Category)
+\end{itemize}
+
+\section*{EXTRA-CURRICULAR ACTIVITIES}
+ \begin{twocolentry}{
+                
+        \textit{2023 –2024}}
+            \textbf{Hackers Club, Department Of Computer engineering University
+ Of Peradeniya}
+        \end{twocolentry}
+
+        \vspace{0.10 cm}
+        \begin{onecolentry}
+            \begin{highlights}
+
+                \item \text{Commitee Member}
+       
+            \end{highlights}
+        \end{onecolentry} 
+        
+        \vspace{1\baselineskip}
+        
+        \begin{twocolentry}{
+                
+        \textit{2021 –2025}}
+            \textbf{Association Computer Engineering Students (ACES),University
+ of Peradeniya }
+        \end{twocolentry}
+
+        \vspace{0.10 cm}
+        \begin{onecolentry}
+            \begin{highlights}
+
+                \item \text{Commitee Member}
+       
+            \end{highlights}
+        \end{onecolentry} 
+        
+        \vspace{1\baselineskip}
+
+        \begin{twocolentry}{
+                
+        \textit{2022 –2023}}
+            \textbf{Engineering Students’ Union}
+        \end{twocolentry}
+
+        \vspace{0.10 cm}
+        \begin{onecolentry}
+            \begin{highlights}
+
+                \item \text{Batch Member}
+       
+            \end{highlights}
+        \end{onecolentry} 
+        
+        \vspace{1\baselineskip}
+
+        \begin{twocolentry}{
+                
+        \textit{2021 –2022}}
+            \textbf{Vibhawa Literary Society University Of Peradeniya}
+        \end{twocolentry}
+
+        \vspace{0.10 cm}
+        \begin{onecolentry}
+            \begin{highlights}
+
+                \item \text{ Member}
+       
+            \end{highlights}
+        \end{onecolentry} 
+        
+        \vspace{1\baselineskip}
+
+\section*{LANGUAGES }
+\begin{itemize}
+    \item English
+    \item Sinhala
+\end{itemize}
+
+
+\section*{REFERENCES}
+
+\begin{minipage}[t]{0.48\textwidth}
+    \textbf{Prof. Roshan G. Ragel} \\
+    Professor, \\
+    Department of Computer Engineering, \\
+    Faculty of Engineering, \\
+    University of Peradeniya, \\
+    Sri Lanka. \\
+    \textbf{Phone:} +94 77 385 7755 \\
+    \textbf{Email:} roshanr@eng.pdn.ac.lk
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.48\textwidth}
+    \textbf{Dr. Damayanthi Herath} \\
+    Senior Lecturer, \\
+    Department of Computer Engineering, \\
+    Faculty of Engineering, \\
+    University of Peradeniya, \\
+    Sri Lanka. \\
+    \textbf{Phone:} +94 81 239 3920 \\
+    \textbf{Email:} damayanthiherath@eng.pdn.ac.lk
+\end{minipage}
+
+    
+
+\end{document}

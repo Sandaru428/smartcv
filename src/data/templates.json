@@ -19,5 +19,40 @@
     "description": "Simple and modern look focused on readability.",
     "previewImage": "/templates/minimalist.png",
     "latexFile": "/data/latex/minimalist.tex"
+  },
+  {
+    "id": "template1",
+    "name": "Template 1",
+    "description": "Simple and modern look focused on readability.",
+    "previewImage": "/templates/template1.png",
+    "latexFile": "/data/latex/template1.tex"
+  },
+  {
+    "id": "template2",
+    "name": "Template 2",
+    "description": "Simple and modern look focused on readability.",
+    "previewImage": "/templates/template2.png",
+    "latexFile": "/data/latex/template2.tex"
+  },
+  {
+    "id": "template3",
+    "name": "Template 3",
+    "description": "Simple and modern look focused on readability.",
+    "previewImage": "/templates/template3.png",
+    "latexFile": "/data/latex/template3.tex"
+  },
+  {
+    "id": "template4",
+    "name": "Template 4",
+    "description": "Simple and modern look focused on readability.",
+    "previewImage": "/templates/template4.png",
+    "latexFile": "/data/latex/template4.tex"
+  },
+  {
+    "id": "template5",
+    "name": "Template 5",
+    "description": "Simple and modern look focused on readability.",
+    "previewImage": "/templates/template5.png",
+    "latexFile": "/data/latex/template5.tex"
   }
 ]
